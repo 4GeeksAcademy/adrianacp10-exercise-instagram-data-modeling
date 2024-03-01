@@ -7,23 +7,54 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+##el back_populate se hace para mantener relaciones bidireccionales entre las tablas
+class User(Base):
+    __tablename__ = 'user'
+
+    id_user = Column(Integer, primary_key=True)
+    username = Column(String(120), nullable=False)
+    firstname = Column(String(120), nullable=False)
+    lastname = Column(String(120), nullable=False)
+    email = Column(String(120), nullable=False)
+    password = Column(String(80), nullable=False)
+
+    posts = relationship('Post', back_populates = 'user')
+    comments = relationship('Comment', back_populates='user')
+
+
+class Post(Base):
+    __tablename__ = 'post'
+
+    id_post = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id.user'))
+
+    user = relationship('User', back_populates ='posts')
+    comments = relationship('Comment', back_populates ='post')
+
+
+class Followers(Base):
+    __tablename__ = 'followers'
+
+    id_followers = Column(Integer, primary_key=True)
+    user_to_id = Column(Integer, ForeignKey('user.id_user'))
+    user_from_id = Column(Integer, ForeignKey('user.id_user'))
+
+    user_to = relationship('User', ForeignKeys =[user_to_id])
+    user_from = relationship('User', Foreign_keys = [user_from_id])
+    
+class Comment(Base):
+    __tablename__ = 'comment'
+
+    id_comment = Column(Integer, primary_key=True)
+    comment_text = Column(String(250), nullable=False)
+    author_id = Column(Integer, ForeignKey('user.id_user'))
+    post_id = Column(Integer, ForeignKey('post.id.post'))
+
+    user = relationship('User', back_populates='comments')
+    post = relationship('Post', back_populates='comments')
+    
+    
 
     def to_dict(self):
         return {}
